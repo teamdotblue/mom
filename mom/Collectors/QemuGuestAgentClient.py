@@ -29,7 +29,7 @@ class ProtocolError(Exception):
         self.msg = msg
 
     def __str__(self):
-        return "ProtocolError (%s): %s" % (self.errno, self.msg)
+        return f"ProtocolError ({self.errno}): {self.msg}"
 
 class QemuAgentRet:
     """
@@ -88,7 +88,7 @@ class _QemuGuestAgentLibvirtClient:
         try:
             getattr(hypervisor_iface, 'qemuAgentCommand')
         except KeyError:
-            raise Exception("hypervisor does not support qemuAgentCommand")
+            raise Exception("hypervisor does not support qemuAgentCommand") from KeyError
         self.hypervisor_iface = hypervisor_iface
         self.uuid = uuid
         self.api = _QemuGuestAgentAPI(self)
@@ -148,7 +148,7 @@ class _QemuGuestAgentSocketClient:
 
     def _connect(self):
         sock_type = socket.AF_UNIX
-        self.logger.debug("Connecting to %s" % self.where)
+        self.logger.debug("Connecting to %s", self.where)
         try:
             self.sock = socket.socket(sock_type, socket.SOCK_STREAM)
             self.sock.settimeout(2)
@@ -157,11 +157,11 @@ class _QemuGuestAgentSocketClient:
         except socket.timeout:
             self._sock_close(self.sock)
             self.sock = None
-            raise ProtocolError(-1, "Timed out")
+            raise ProtocolError(-1, "Timed out") from socket.timeout
         except socket.error as e:
             self._sock_close(self.sock)
             self.sock = None
-            raise ProtocolError(e.errno, "Connection failed: %s" % e.strerror)
+            raise ProtocolError(e.errno, f"Connection failed: {e.strerror}") from e
 
     def _make_connection(self):
         """
@@ -183,11 +183,11 @@ class _QemuGuestAgentSocketClient:
             except socket.timeout:
                 self._sock_close(self.sock)
                 self.sock = None
-                raise ProtocolError(-1, "Timed out")
+                raise ProtocolError(-1, "Timed out") from socket.timeout
             except socket.error as e:
                 self._sock_close(self.sock)
                 self.sock = None
-                raise ProtocolError(e.errno, e.strerror)
+                raise ProtocolError(e.errno, e.strerror) from e
 
             if ret == 0:
                 self._sock_close(self.sock)
@@ -208,11 +208,11 @@ class _QemuGuestAgentSocketClient:
             except socket.timeout:
                 self._sock_close(self.sock)
                 self.sock = None
-                raise ProtocolError(-1, "Timed out")
+                raise ProtocolError(-1, "Timed out") from socket.timeout
             except socket.error as e:
                 self._sock_close(self.sock)
                 self.sock = None
-                raise ProtocolError(e.errno, e.strerror)
+                raise ProtocolError(e.errno, e.strerror) from e
             if ch == b'':
                 self.logger.debug("Connection closed")
                 return None

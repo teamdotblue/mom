@@ -103,21 +103,21 @@ class VdsmRpcBase(HypervisorInterface):
 
         ret = {}
         # Get user selection for vCPU limit
-        vcpuUserLimit = vm.get('vcpuUserLimit', 100)
-        ret['vcpu_user_limit'] = vcpuUserLimit
+        vcpu_user_limit = vm.get('vcpuUserLimit', 100)
+        ret['vcpu_user_limit'] = vcpu_user_limit
 
         # Get current vcpu tuning info
-        vcpuQuota = vm.get('vcpuQuota', 0)
-        ret['vcpu_quota'] = vcpuQuota
-        vcpuPeriod = vm.get('vcpuPeriod', 0)
-        ret['vcpu_period'] = vcpuPeriod
+        vcpu_quota = vm.get('vcpuQuota', 0)
+        ret['vcpu_quota'] = vcpu_quota
+        vcpu_period = vm.get('vcpuPeriod', 0)
+        ret['vcpu_period'] = vcpu_period
 
         #Get num of vCPUs
-        vcpuCount = vm.get('vcpuCount', None)
-        if vcpuCount is None:
+        vcpu_count = vm.get('vcpuCount', None)
+        if vcpu_count is None:
             return None
 
-        ret['vcpu_count'] = vcpuCount
+        ret['vcpu_count'] = vcpu_count
 
         # Make sure the values are numbers, VDSM is using str
         # to avoid xml-rpc issues
@@ -154,4 +154,4 @@ class VdsmRpcBase(HypervisorInterface):
         try:
             return self.getAllVmStats()[vmId]
         except KeyError:
-            raise HypervisorInterfaceError("VM %s does not exist" % vmId)
+            raise HypervisorInterfaceError(f"VM {vmId} does not exist") from KeyError

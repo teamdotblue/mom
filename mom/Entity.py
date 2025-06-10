@@ -59,7 +59,7 @@ class Entity:
                 if stat in self.monitor.valid_fields:
                     setattr(self, stat, self.statistics[-1][stat])
                 else:
-                    self.monitor.logger.debug("Field '%s' not known. Ignoring." % stat)
+                    self.monitor.logger.debug("Field '%s' not known. Ignoring.", stat)
 
     def _disp(self, name=''):
         """
@@ -93,32 +93,30 @@ class Entity:
         Returns None if no statistics are available
         """
         if name not in self.monitor.valid_fields:
-            raise KeyError("Field '%s' is not declared in any collector." % name)
+            raise KeyError(f"Field '{name}' is not declared in any collector.")
 
         if len(self.statistics) > 0:
             return self.statistics[-1].get(name, default)
-        else:
-            return None
+        return None
 
     def StatAvg(self, name):
         """
         Calculate the average value of a statistic using all recent values.
         """
         if name not in self.monitor.valid_fields:
-            raise KeyError("Field '%s' is not declared in any collector." % name)
+            raise KeyError(f"Field '{name}' is not declared in any collector.")
 
-        if (len(self.statistics) == 0):
-            raise EntityError("Statistic '%s' not available" % name)
+        if len(self.statistics) == 0:
+            raise EntityError(f"Statistic '{name}' not available")
 
         total = 0
-        nonEmptyStats = [x for x in self.statistics \
+        non_empty_stats = [x for x in self.statistics \
                          if x.get(name, None) is not None]
-        for row in nonEmptyStats:
+        for row in non_empty_stats:
             total = total + row[name]
-        if (len(nonEmptyStats) == 0):
+        if len(non_empty_stats) == 0:
             return float(0)
-        else:
-            return float(total / len(nonEmptyStats))
+        return float(total / len(non_empty_stats))
 
     def SetVar(self, name, val):
         """
@@ -133,8 +131,7 @@ class Entity:
         """
         if name in self.variables:
             return self.variables[name]
-        else:
-            return None
+        return None
 
     def Control(self, name, val):
         """
@@ -149,5 +146,4 @@ class Entity:
         """
         if name in self.controls:
             return self.controls[name]
-        else:
-            return None
+        return None

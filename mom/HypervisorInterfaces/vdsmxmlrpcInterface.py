@@ -137,7 +137,7 @@ class XmlRpcVdsmInterface(VdsmRpcBase):
             e.handle_exception()
 
     def handle_connection_error(self, e):
-        self._logger.error("Cannot connect to VDSM! {0}".format(e))
+        self._logger.error("Cannot connect to VDSM! %s ", e)
 
 def instance(config):
     return XmlRpcVdsmInterface()

@@ -20,14 +20,15 @@ from functools import total_ordering
 import re
 from .spark import GenericScanner, GenericParser
 
-class PolicyError(Exception): pass
+class PolicyError(Exception):
+    pass
 
 @total_ordering
 class Token(object):
     def __init__(self, kind, value=None, line=None):
         self.kind = kind
         self.line = line
-        if value == None:
+        if value is None:
             self.value = kind
         else:
             self.value = value
@@ -42,7 +43,7 @@ class Token(object):
         return self.kind < rhs
 
     def __repr__(self):
-        return '[%s %s]' % (self.kind, self.value)
+        return f"[{self.kind} {self.value}]"
 
 class NumericToken(Token):
     def __init__(self, type, value, line=None):
@@ -63,9 +64,8 @@ class Scanner(GenericScanner):
                         nop += '\\'
                     nop += ch
                 return nop
-            return ' %s ' % '|'.join(map(escape, self.operators))
-        else:
-            raise AttributeError(name)
+            return f" {'|'.join(map(escape, self.operators))} "
+        raise AttributeError(name)
 
     def tokenize(self, input):
         self.rv = []
@@ -78,7 +78,6 @@ class Scanner(GenericScanner):
 
     def t_pound_comment(self, s, line):
         r' \#.*?\n '
-        pass
 
     def t_symbol(self, s, line):
         r' [A-Za-z_][A-Za-z0-9_\-\.]* '
@@ -223,7 +222,7 @@ class GenericEvaluator(object):
     # is a list containing a symbol and zero or more numbers
     def _dispatch(self, fn, args, line):
         doc = fn.__doc__
-        if doc == None:
+        if doc is None:
             args = list(map(self.eval, args))
         else:
             types = self.parse_doc(doc)
@@ -233,11 +232,11 @@ class GenericEvaluator(object):
             # minimal number of required arguments
             if len(types) != len(args) and (types[-1].value != '...'
                                             or types[-1].kind != 'operator'):
-                raise PolicyError("arity mismatch in doc parsing of '%s'"
-                                  " on line %d" % (fn.__name__, line))
-            elif types[-1].value == '...' and len(types) > len(args) + 1:
-                raise PolicyError("not enough arguments for '%s'"
-                                  " on line %d" % (fn.__name__, line))
+                raise PolicyError(f"arity mismatch in doc parsing of '{fn.__name__}'"
+                                  f" on line {line}")
+            if types[-1].value == '...' and len(types) > len(args) + 1:
+                raise PolicyError(f"not enough arguments for '{fn.__name__}'"
+                                  f" on line {line}")
 
             i = 0
             while types and i < len(args):
@@ -251,10 +250,9 @@ class GenericEvaluator(object):
                 if type.value == 'code':
                     i += 1
                     continue
-                elif type.value == 'symbol':
+                if type.value == 'symbol':
                     if not isinstance(args[i], Token) or args[i].kind != 'symbol':
-                        raise PolicyError('malformed expression'
-                                          ' on line %d' % line)
+                        raise PolicyError(f"malformed expression on line {line}")
                     args[i] = args[i].value
                 else:
                     args[i] = self.eval(args[i])
@@ -268,16 +266,13 @@ class GenericEvaluator(object):
         if isinstance(code, Token):
             if code.kind == 'number':
                 return self.eval_number(code)
-            elif code.kind == 'string':
+            if code.kind == 'string':
                 return code.value[1:-1]
-            elif code.kind == 'symbol':
+            if code.kind == 'symbol':
                 if code.value == "nil":
                     return None
-                else:
-                    return self.eval_symbol(code.value, code.line)
-            else:
-                raise PolicyError('Unexpected token type "%s" on line %d' %
-                                  (code.kind, code.line))
+                return self.eval_symbol(code.value, code.line)
+            raise PolicyError(f"Unexpected token type \\\"{code.kind}\\\" on line {code.line}")
 
         node = code[0]
         if not isinstance(node, Token):
@@ -289,20 +284,20 @@ class GenericEvaluator(object):
         elif node.kind == 'operator':
             name = self.operator_map[node.value]
         else:
-            raise PolicyError('Unexpected token type in arg 1 "%s"'
-                              ' on line %d' % (node.kind, node.line))
+            raise PolicyError(f"Unexpected token type in arg 1 \\\"{node.kind}\\\" " \
+                               f"on line {node.line}")
 
         func = self.stack.get(name, line=node.line, allow_undefined=True)
         if func is not None:
             args = list(map(self.eval, code[1:]))
             return func(*args)
-        elif hasattr(self, 'c_%s' % name):
-            return self._dispatch(getattr(self, 'c_%s' % name), code[1:], line=node.line)
+        elif hasattr(self, f"c_{name}"):
+            return self._dispatch(getattr(self, f"c_{name}"), code[1:], line=node.line)
         elif hasattr(self, "default"):
             return self.default(name, code[1:], line=node.line)
         else:
-            raise PolicyError('Unknown function "%s" with no default handler'
-                              ' on line %d' % (name, node.line))
+            raise PolicyError(f"Unknown function \\\"{name}\\\" " \
+                              f"with no default handler on line {node.line}")
 
 class VariableStack(object):
     def __init__(self):
@@ -327,7 +322,7 @@ class VariableStack(object):
                     return scope[obj]
         if allow_undefined:
             return None
-        raise PolicyError("undefined symbol %s on line %d" % (name, line))
+        raise PolicyError(f"undefined symbol {name} on line {line}")
 
     def set(self, name, value, alloc=False):
         if alloc:
@@ -339,7 +334,7 @@ class VariableStack(object):
                 scope[name] = value
                 return value
 
-        raise PolicyError("undefined symbol %s" % name)
+        raise PolicyError(f"undefined symbol {name}")
 
 class Evaluator(GenericEvaluator):
     operator_map = {'+': 'add', '-': 'sub',
@@ -373,8 +368,8 @@ class Evaluator(GenericEvaluator):
         elif token.type in ('integer', 'hex', 'octal'):
             return int(token.value, 0)
         else:
-            raise PolicyError("Unsupported numeric type for token"
-                              " '%s' on line %d" % (token, token.line))
+            raise PolicyError("Unsupported numeric type for token" \
+                              f" '{token}' on line {token.line}")
 
     def default(self, name, args, line):
         if name == 'eval':
@@ -382,12 +377,12 @@ class Evaluator(GenericEvaluator):
 
         params, code = self.funcs[name]
         if len(params) != len(args):
-            raise PolicyError('Function "%s" invoked with incorrect arity'
-                              ' on line %d' % (name, line))
+            raise PolicyError(f"Function \\\"{name}\\\" invoked with incorrect arity" \
+                              f" on line {line}")
 
         scope = []
-        for i in range(len(params)):
-            scope.append([params[i], args[i]])
+        for i, param in enumerate(params):
+            scope.append([param, args[i]])
 
         return self.eval([Token('symbol', 'let'), scope, code])
 
@@ -412,33 +407,33 @@ class Evaluator(GenericEvaluator):
 
     def c_let(self, syms, *code):
         'code code ...'
-        if type(syms) != list:
+        if not isinstance(syms, list):
             raise PolicyError('Expecting list as arg 1 in let')
 
         self.stack.enter_scope()
         for sym in syms:
-            if type(sym) != list or len(sym) != 2:
+            if not isinstance(sym, list) or len(sym) != 2:
                 raise PolicyError('Expecting list of tuples in arg1 of let')
             name, value = sym
             if name.kind != 'symbol':
                 raise PolicyError('Expecting list of (symbol value) in let')
             self.stack.set(name.value, self.eval(value), True)
         for expr in code:
-            result = self.eval(expr)
+            outcome = self.eval(expr)
         self.stack.leave_scope()
-        return result
+        return outcome
 
     def c_with(self, iterable, iterator, code):
         'symbol symbol code'
 
-        list = self.stack.get(iterable)
-        result = []
-        for item in list:
+        stack_list = self.stack.get(iterable)
+        outcome = []
+        for item in stack_list:
             self.stack.enter_scope()
             self.stack.set(iterator, item, True)
-            result.append(self.eval(code))
+            outcome.append(self.eval(code))
             self.stack.leave_scope()
-        return result
+        return outcome
 
     def c_if(self, cond, yes, no):
         'value code code'
@@ -544,14 +539,14 @@ def get_code(e, string):
         parser = Parser(start='value_list')
         return parser.parse(tokens)
     except SystemExit:
-        raise PolicyError("parse error")
+        raise PolicyError("parse error") from SystemExit
 
 def eval(e, string):
     code = get_code(e, string)
-    results = []
+    eval_results = []
     for expr in code:
-        results.append(e.eval(expr))
-    return results
+        eval_results.append(e.eval(expr))
+    return eval_results
 
 def repl(e):
     while True:

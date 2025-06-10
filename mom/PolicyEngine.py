@@ -46,11 +46,11 @@ class PolicyEngine(threading.Thread):
         def read_policy(file_name, policy_name):
             try:
                 with open(file_name, 'r') as f:
-                    policyStr = f.read()
+                    policy_str = f.read()
             except IOError as e:
-                self.logger.warning("Unable to read policy file: %s" % e)
+                self.logger.warning("Unable to read policy file: %s", e)
                 return False
-            return self.policy.set_policy(policy_name, policyStr)
+            return self.policy.set_policy(policy_name, policy_str)
 
         fname = self.config.get('main', 'policy')
         if fname:
@@ -61,8 +61,7 @@ class PolicyEngine(threading.Thread):
             try:
                 names = sorted(os.listdir(policy_dir))
             except OSError as e:
-                self.logger.warning("Unable to read directory '%s': %s" % (
-                                    policy_dir, e.strerror))
+                self.logger.warning("Unable to read directory '%s': %s" , policy_dir, e.strerror)
                 return False
             for name in names:
                 if name.startswith('.') or not name.endswith('.policy'):
@@ -138,7 +137,7 @@ class PolicyEngine(threading.Thread):
             while self.config.getint('__int__', 'running') == 1:
                 time.sleep(interval)
                 self.do_controls()
-        except Exception as e:
+        except Exception:
             self.logger.error("Policy Engine crashed", exc_info=True)
         else:
             self.logger.info("Policy Engine ending")

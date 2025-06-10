@@ -49,7 +49,7 @@ class GuestQemuProc(Collector):
         try:
             stats = self.pid_stat_file.read().split()
         except IOError as e:
-            raise CollectionError("Cannot read stat file: %s" % e.strerror)
+            raise CollectionError(f"Cannot read stat file: {e.strerror}") from e
         cur_minor_faults = int(stats[9])
         cur_major_faults = int(stats[11])
         rss = int(stats[23])

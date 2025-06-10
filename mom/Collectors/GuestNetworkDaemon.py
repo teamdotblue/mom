@@ -38,11 +38,11 @@ def sock_receive(conn, logger=None):
     msg = b""
     done = False
     if logger:
-        logger.debug('sock_receive(%s)' % conn)
+        logger.debug(f"sock_receive({conn})")
     while not done:
         chunk = conn.recv(4096)
         if logger:
-            logger.debug("sock_receive: received next chunk: %s" % repr(chunk))
+            logger.debug(f"sock_receive: received next chunk: {repr(chunk)}")
         if chunk == b'':
             done = True
         msg = msg + chunk
@@ -50,8 +50,7 @@ def sock_receive(conn, logger=None):
             done = True
     if len(msg) == 0:
         raise socket.error("Unable to receive on socket")
-    else:
-        return msg.rstrip(b"\n")
+    return msg.rstrip(b"\n")
 
 def sock_close(sock):
     try:
@@ -116,15 +115,14 @@ class GuestNetworkDaemon(Collector):
         except socket.error as msg:
             sock_close(self.socket)
             self.socket = None
-            raise CollectionError('Network connection to %s failed: %s' %
-                                  (self.name, msg))
+            raise CollectionError(f"Network connection to {self.name} failed: {msg}") from msg
 
     def collect(self):
         if self.state == 'dead':
             return {}
         if self.ip is None:
             self.state = 'dead'
-            raise CollectionError('No IP address for guest %s' % self.name)
+            raise CollectionError(f"No IP address for guest {self.name}")
 
         data = ""
         if self.socket is None:
@@ -135,8 +133,7 @@ class GuestNetworkDaemon(Collector):
         except socket.error as msg:
             sock_close(self.socket)
             self.socket = None
-            raise CollectionError('Network communication to %s failed: %s' %
-                                  (self.name, msg))
+            raise CollectionError(f"Network communication to {self.name} failed: {msg}") from msg
 
         self.state = 'ok'
 
@@ -198,10 +195,9 @@ class _Server:
         minflt = parse_int("^pgfault (.*)", contents)
         majflt = parse_int("^pgmajfault (.*)", contents)
 
-        response = "mem_available:%i,mem_unused:%i,swap_in:%i,swap_out:%i," \
-                   "major_fault:%i,minor_fault:%i" % \
-                   (data['mem_available'], data['mem_free'], data['swap_in'], \
-                    data['swap_out'], majflt, minflt)
+        response = f"mem_available:{data['mem_available']},mem_unused:{data['mem_free']}," \
+                   f"swap_in:{data['swap_in']},swap_out:{data['swap_out']}," \
+                   f"major_fault:{majflt},minor_fault:{minflt}"
         sock_send(conn, response.encode('utf-8'))
 
     def session(self, conn, addr):
@@ -217,7 +213,7 @@ class _Server:
                 else:
                     break
             except socket.error as msg:
-                self.logger.warning("Exception: %s" % msg)
+                self.logger.warning("Exception: %s", msg)
                 break
         sock_close(conn)
         self.logger.debug("Connection closed")

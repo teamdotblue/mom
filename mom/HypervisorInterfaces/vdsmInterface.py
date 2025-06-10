@@ -13,15 +13,14 @@
 # You should have received a copy of the GNU General Public
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-
+import logging
+import traceback
 import sys
+from mom.HypervisorInterfaces.HypervisorInterface import HypervisorInterface, \
+    HypervisorInterfaceError
 sys.path.append('/usr/share/vdsm')
 import API
 import supervdsm
-import logging
-import traceback
-from mom.HypervisorInterfaces.HypervisorInterface import HypervisorInterface, \
-    HypervisorInterfaceError
 
 
 class vdsmInterface(HypervisorInterface):
@@ -171,21 +170,20 @@ class vdsmInterface(HypervisorInterface):
             self._check_status(response)
 
             # Get user selection for vCPU limit
-            vcpuUserLimit = response['statsList'][0].get('vcpuUserLimit', 100)
-            ret['vcpu_user_limit'] = vcpuUserLimit
+            vcpu_user_limit = response['statsList'][0].get('vcpuUserLimit', 100)
+            ret['vcpu_user_limit'] = vcpu_user_limit
 
             # Get current vcpu tuning info
-            vcpuQuota = response['statsList'][0].get('vcpuQuota', 0)
-            ret['vcpu_quota'] = vcpuQuota
-            vcpuPeriod = response['statsList'][0].get('vcpuPeriod', 0)
-            ret['vcpu_period'] = vcpuPeriod
+            vcpu_quota = response['statsList'][0].get('vcpuQuota', 0)
+            ret['vcpu_quota'] = vcpu_quota
+            vcpu_period = response['statsList'][0].get('vcpuPeriod', 0)
+            ret['vcpu_period'] = vcpu_period
 
             #Get num of vCPUs
-            vcpuCount = response['statsList'][0].get('vcpuCount', None)
-            if vcpuCount is None:
+            vcpu_count = response['statsList'][0].get('vcpuCount', None)
+            if vcpu_count is None:
                 return None
-            else:
-                ret['vcpu_count'] = vcpuCount
+            ret['vcpu_count'] = vcpu_count
 
             # Make sure the values are numbers, VDSM is using str
             # to avoid xml-rpc issues
@@ -214,8 +212,8 @@ class vdsmInterface(HypervisorInterface):
     def ksmTune(self, tuningParams):
         # When MOM is lauched by vdsm, it's running without root privileges.
         # So we need resort to supervdsm to set the KSM parameters.
-        superVdsm = supervdsm.getProxy()
-        superVdsm.ksmTune(tuningParams)
+        super_vdsm = supervdsm.getProxy()
+        super_vdsm.ksmTune(tuningParams)
 
 
 class vdsmException(Exception):

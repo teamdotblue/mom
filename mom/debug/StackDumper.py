@@ -20,7 +20,7 @@ import logging
 
 try:
     import threadframe
-except:
+except Exception:
     pass
 
 class StackDumper:
@@ -33,11 +33,11 @@ class StackDumper:
         except AttributeError:
             try:
                 stacks = threadframe.dict()
-            except:
+            except Exception:
                 self.logger.debug("Stack dumping not supported")
                 return
 
         for (id, stack) in stacks.items():
-            msg = "Stack trace for thread %i\n" % id
+            msg = f"Stack trace for thread {id}\n"
             msg = msg + ''.join(traceback.format_stack(stack))
             self.logger.debug(msg)

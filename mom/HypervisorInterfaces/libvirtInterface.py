@@ -14,13 +14,14 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-import libvirt
-import re
-import logging
-from subprocess import *
-from mom.HypervisorInterfaces.HypervisorInterface import *
 from xml.etree import ElementTree
 from xml.dom.minidom import parseString as _domParseStr
+import re
+import logging
+import libvirt
+import libvirt_qemu
+from subprocess import *
+from mom.HypervisorInterfaces.HypervisorInterface import *
 
 _METADATA_VM_TUNE_URI = 'http://ovirt.org/vm/tune/1.0'
 
@@ -65,7 +66,7 @@ class libvirtInterface(HypervisorInterface):
             self._connect()
         except libvirt.libvirtError as e:
             self.logger.error("libvirtInterface: Exception while " \
-                    "reconnecting: %s", e);
+                    "reconnecting: %s", e)
 
 
     def _getDomainFromID(self, dom_id):
@@ -74,8 +75,7 @@ class libvirtInterface(HypervisorInterface):
         except libvirt.libvirtError as e:
             self._handleException(e)
             return None
-        else:
-            return dom
+        return dom
 
     def _getDomainFromUUID(self, dom_uuid):
         try:
@@ -83,8 +83,7 @@ class libvirtInterface(HypervisorInterface):
         except libvirt.libvirtError as e:
             self._handleException(e)
             return None
-        else:
-            return dom
+        return dom
 
     def _domainIsRunning(self, domain):
         try:
@@ -130,7 +129,7 @@ class libvirtInterface(HypervisorInterface):
             self.logger.warning("No matching process for domain with uuid %s", \
                                 uuid)
             return None
-        elif len(matches) > 1:
+        if len(matches) > 1:
             self.logger.warning("Too many process matches for domain with uuid %s",\
                                 uuid)
             return None
@@ -141,7 +140,7 @@ class libvirtInterface(HypervisorInterface):
             domain.setMemoryStatsPeriod(period)
         except libvirt.libvirtError as e:
             self._handleException(e)
-        except AttributeError as e:
+        except AttributeError:
             pass # Older versions of libvirt don't have the method
 
     def _domainGetMemoryStats(self, domain):
@@ -252,19 +251,19 @@ class libvirtInterface(HypervisorInterface):
         domain = self._getDomainFromUUID(uuid)
 
         # Get the user selection for vcpuLimit from the metadata
-        metadataCpuLimit = None
+        metadata_cpu_limit = None
         try:
-            metadataCpuLimit = domain.metadata(
+            metadata_cpu_limit = domain.metadata(
                 libvirt.VIR_DOMAIN_METADATA_ELEMENT, _METADATA_VM_TUNE_URI, 0)
         except libvirt.libvirtError as e:
             if e.get_error_code() != libvirt.VIR_ERR_NO_DOMAIN_METADATA:
                 self.logger.error("Failed to retrieve QoS metadata")
 
-        if metadataCpuLimit:
-            metadataCpuLimitXML = _domParseStr(metadataCpuLimit)
-            nodeList = \
-                metadataCpuLimitXML.getElementsByTagName('vcpuLimit')
-            ret['vcpu_user_limit'] = nodeList[0].childNodes[0].data
+        if metadata_cpu_limit:
+            metadata_cpu_limit_xml = _domParseStr(metadata_cpu_limit)
+            node_list = \
+                metadata_cpu_limit_xml.getElementsByTagName('vcpuLimit')
+            ret['vcpu_user_limit'] = node_list[0].childNodes[0].data
         else:
             ret['vcpu_user_limit'] = 100
 
@@ -278,9 +277,9 @@ class libvirtInterface(HypervisorInterface):
             ret['vcpu_period'] = 0
 
         # Get the number of vcpus
-        vcpuCount = domain.vcpusFlags(libvirt.VIR_DOMAIN_VCPU_CURRENT)
-        if vcpuCount != -1:
-            ret['vcpu_count'] =  vcpuCount
+        vcpu_count = domain.vcpusFlags(libvirt.VIR_DOMAIN_VCPU_CURRENT)
+        if vcpu_count != -1:
+            ret['vcpu_count'] =  vcpu_count
         else:
             self.logger.error('Failed to get VM cpu count')
             return None
@@ -300,7 +299,7 @@ class libvirtInterface(HypervisorInterface):
             dom.setSchedulerParameters({ 'vcpu_quota': quota, 'vcpu_period': period})
         except libvirt.libvirtError as e:
             self.logger.error("libvirtInterface: Exception while " \
-                    "setSchedulerParameters: %s", e);
+                    "setSchedulerParameters: %s", e)
 
     def ksmTune(self, tuningParams):
         def write_value(fname, value):
@@ -311,10 +310,9 @@ class libvirtInterface(HypervisorInterface):
                 self.logger.warning("KSM: Failed to write %s: %s", fname, e.strerror)
 
         for (key, val) in tuningParams.items():
-            write_value('/sys/kernel/mm/ksm/%s' % key, val)
+            write_value(f"/sys/kernel/mm/ksm/{key}", val)
 
     def qemuAgentCommand(self, uuid, command, timeout=10):
-        import libvirt_qemu
         dom = self._getDomainFromUUID(uuid)
         if dom is None:
             return None

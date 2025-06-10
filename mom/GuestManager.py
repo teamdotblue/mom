@@ -78,7 +78,7 @@ class GuestManager(threading.Thread):
     def run(self):
         try:
             self.logger.info("Guest Manager starting: %s",
-                "multi-thread" if self._threaded else "single-thread");
+                "multi-thread" if self._threaded else "single-thread")
             interval = self.config.getint('main', 'guest-manager-interval')
             while self.config.getint('__int__', 'running') == 1:
                 domain_list = self.hypervisor_iface.getVmList()
@@ -93,7 +93,7 @@ class GuestManager(threading.Thread):
 
             if self._threaded:
                 self._wait_for_guest_monitors()
-        except Exception as e:
+        except Exception:
             self.logger.error("Guest Manager crashed", exc_info=True)
         else:
             self.logger.info("Guest Manager ending")

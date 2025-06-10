@@ -48,7 +48,7 @@ class HostMonitor(Monitor, threading.Thread):
             while self.should_run():
                 data = self.collect()
                 time.sleep(self.interval)
-        except Exception as e:
+        except Exception:
             self.logger.error("Host Monitor crashed", exc_info=True)
         else:
             self.logger.info("Host Monitor ending")

@@ -56,24 +56,22 @@ class HostKSM(Collector):
         out = proc.communicate()[0]
         if proc.returncode == 0:
             return int(out)
-        else:
-            return None
+        return None
 
     def open_files(self):
         self.files = {}
         for datum in self.sysfs_keys:
-            name = '/sys/kernel/mm/ksm/%s' % datum
+            name = f"/sys/kernel/mm/ksm/{datum}"
             try:
                 self.files[datum] = open(name, 'r')
             except IOError as e:
-                raise FatalError("HostKSM: open %s failed: %s" % (name, e.strerror))
+                raise FatalError(f"HostKSM: open {name} failed: {e.strerror}") from e
 
     def get_ksmd_jiffies(self):
         if self.pid is None:
             return 0
-        else:
-            return sum(map(int, open('/proc/%s/stat' % self.pid)
-                       .read().split()[13:15]))
+        return sum(map(int, open('/proc/%s/stat' % self.pid)
+                   .read().split()[13:15]))
 
     def get_ksmd_cpu_usage(self):
         """
@@ -96,7 +94,7 @@ class HostKSM(Collector):
         try:
             p1 = Popen(["pgrep", "qemu"], stdout=PIPE).communicate()[0]
         except OSError:
-            raise CollectionError("HostKSM: Unable to execute pgrep")
+            raise CollectionError("HostKSM: Unable to execute pgrep") from OSError
         pids = p1.split()
         if len(pids) == 0:
             return 0

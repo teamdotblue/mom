@@ -45,4 +45,3 @@ class JsonRpcVdsmBulkInterface(JsonRpcVdsmInterface):
 
 def instance(config):
     return JsonRpcVdsmBulkInterface()
-

@@ -12,27 +12,27 @@ class IoTune:
         self.logger = logging.getLogger('mom.Controllers.IoTune')
 
     def process_guest(self, guest):
-        ioTune = guest.io_tune
-        ioTune_prev = guest.io_tune_current
+        io_tune = guest.io_tune
+        io_tune_prev = guest.io_tune_current
 
-        if not ioTune or not ioTune_prev:
+        if not io_tune or not io_tune_prev:
             return
 
-        changedList = []
-        for i in range(len(ioTune)):
-            tune = ioTune[i].ioTune()
-            tune_prev = ioTune_prev[i]
+        changed_list = []
+        for i, io_t in enumerate(io_tune):
+            tune = io_t.ioTune()
+            tune_prev = io_tune_prev[i]
 
             # nothing changed
             if tune['ioTune'] == tune_prev['ioTune']:
                 continue
 
-            changedList.append(tune)
+            changed_list.append(tune)
 
         uuid = guest.Prop('uuid')
         name = guest.Prop('name')
-        if changedList:
-            self.hypervisor_iface.setVmIoTune(uuid, changedList)
+        if changed_list:
+            self.hypervisor_iface.setVmIoTune(uuid, changed_list)
 
     def process(self, host, guests):
         for guest in guests:

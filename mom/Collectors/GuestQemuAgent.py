@@ -50,10 +50,10 @@ class GuestQemuAgent(Collector):
         except KeyError as e:
             socket_name = self.name + '.agent'
             self.logger.warning("Error substituting socket name " \
-                                "template. Invalid key: %s" % e)
-            self.logger.warning("Using socket name %s." % socket_name)
+                                "template. Invalid key: %s", e)
+            self.logger.warning("Using socket name %s.", socket_name)
 
-        self.sockets = [ None, "%s/%s" % (socket_path, socket_name) ]
+        self.sockets = [ None, f"{socket_path}/{socket_name}"]
         self.agent = None
 
         self.swap_in_prev = None
@@ -69,19 +69,19 @@ class GuestQemuAgent(Collector):
         """
         try:
             func = getattr(self.agent.api, cmd)
-        except AttributeError:
-            raise CollectionError("Invalid agent command: %s" % cmd)
+        except AttributeError as at:
+            raise CollectionError(f"Invalid agent command: {cmd}") from at
 
         try:
             ret = func(*args)
         except ProtocolError as e:
-            raise CollectionError("Agent communication failed: %s" % e)
+            raise CollectionError(f"Agent communication failed: {e}") from e
         if ret.error:
             # Convert error data into a string of the form:
             #    "foo=bar, whiz=bang"
             try:
                 details = ", ".join(
-                    ("%s=%s" % (k, v) for k, v in ret.error['data'].items())
+                    (f"{k}={v}" for k, v in ret.error['data'].items())
                 )
             except KeyError:
                 details = ""
@@ -91,8 +91,8 @@ class GuestQemuAgent(Collector):
             except KeyError:
                 desc = ""
             details = " ".join((desc, details)).strip()
-            err_str = "%s (details: %s)" % (ret.error['class'], details)
-            raise CollectionError("Agent command failed: %s" % err_str)
+            err_str = f"{ret.error['class']} (details: {details})"
+            raise CollectionError(f"Agent command failed: {err_str}")
 
         return ret.data
 
@@ -116,7 +116,7 @@ class GuestQemuAgent(Collector):
                     self.agent = agent
                     break
             except Exception as e:
-                self.logger.debug("Connection failed: %s" % e)
+                self.logger.debug("Connection failed: %s", e)
         return self.agent is not None
 
     def getfile(self, path, maxSize=1048576):
@@ -131,8 +131,7 @@ class GuestQemuAgent(Collector):
             if len(ret) < 1024:
                 break
             if len(data) > maxSize:
-                raise CollectionError("Remote file '%s' is too large" % \
-                                      path)
+                raise CollectionError(f"Remote file '{path}' is too large")
         self.agent_cmd('file_close', fh)
         return data.decode('utf-8')
 

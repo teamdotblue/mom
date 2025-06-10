@@ -25,9 +25,9 @@ from .LogUtils import *
 
 def big_int_marshaller(m, value, writer):
     if value >= 2**31 or value <= -2**31:
-        writer("<value><i8>%d</i8></value>" % value)
+        writer(f"<value><i8>{value}</i8></value>")
     else:
-        writer("<value><int>%d</int></value>" % value)
+        writer(f"<value><int>{value}</int></value>")
 
 
 def enable_i8():
@@ -68,7 +68,7 @@ class RPCServer(threading.Thread):
         except ValueError:
             port = None
             unix_port = self.config.get('main', 'rpc-port')
-            self.logger.info("Using unix socket "+unix_port)
+            self.logger.info("Using unix socket %s ", unix_port)
 
         if unix_port is None and (port is None or port < 0):
             return None
@@ -98,5 +98,5 @@ class RPCServer(threading.Thread):
                 self.logger.info("RPC Server ending")
             else:
                 self.logger.info("RPC Server is disabled")
-        except Exception as e:
+        except Exception:
             self.logger.error("RPC Server crashed", exc_info=True)

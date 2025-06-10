@@ -100,17 +100,16 @@ class Monitor(object):
                     if key not in data or data[key] is None:
                         data[key] = val
             except Collector.CollectionError as e:
-                self._disp_collection_error("Collection error: %s" % e.msg)
+                self._disp_collection_error(f"Collection error: {e.msg}")
             except Collector.FatalError as e:
-                self._set_not_ready("Fatal Collector error: %s" % e.msg)
+                self._set_not_ready(f"Fatal Collector error: {e.msg}")
                 self.terminate()
                 return None
             except Exception:
                 self.logger.exception("Unexpected collection error")
 
         if not set(data).issuperset(self.fields):
-            self._set_not_ready("Incomplete data: missing %s" % \
-                                (self.fields - set(data)))
+            self._set_not_ready(f"Incomplete data: missing {self.fields - set(data)}")
             return None
 
         # put None to all unset (optional) fields

@@ -63,7 +63,7 @@ class Policy:
             try:
                 self.code = get_code(Evaluator(), self._cat_policies())
             except PolicyError as e:
-                self.logger.warning("Unable to load policy: %s" % e)
+                self.logger.warning("Unable to load policy: %s", e)
                 if oldStr is None:
                     del self.policy_strings[name]
                 else:
@@ -89,11 +89,11 @@ class Policy:
             try:
                 for expr in self.code:
                     results.append(evaluator.eval(expr))
-                self.logger.debug("Results: %s" % results)
+                self.logger.debug("Results: %s", results)
             except PolicyError as e:
-                self.logger.error("Policy error: %s" % e)
+                self.logger.error("Policy error: %s", e)
                 return False
             except Exception as e:
-                self.logger.error("Unexpected error when evaluating policy: %s" % e)
+                self.logger.error("Unexpected error when evaluating policy: %s", e)
                 return False
         return True

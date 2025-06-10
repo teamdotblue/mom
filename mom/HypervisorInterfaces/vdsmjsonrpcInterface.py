@@ -18,11 +18,12 @@ import socket
 
 from vdsm import jsonrpcvdscli
 
+from mom.optional import Optional
+
 from .HypervisorInterface import ConnectionError
 from .vdsmCommon import memoize, vdsmException
 from .vdsmRpcBase import VdsmRpcBase
 
-from mom.optional import Optional
 
 # Time validity of the cache in seconds
 CACHE_EXPIRATION_IOTUNE = 300
@@ -96,13 +97,13 @@ class JsonRpcVdsmInterface(VdsmRpcBase):
             self._check_status(response)
             return Optional(response)
         except socket.error as e:
-            self._logger.error("Cannot connect to VDSM! {0}".format(e))
+            self._logger.error("Cannot connect to VDSM! %s", e)
             return Optional.missing()
         except vdsmException as e:
             e.handle_exception()
             return Optional.missing()
         except jsonrpcvdscli.JsonRpcNoResponseError as e:
-            self._logger.error("No response from VDSM arrived! {0}".format(e))
+            self._logger.error("No response from VDSM arrived! %s", e)
             return Optional.missing()
 
 

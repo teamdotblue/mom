@@ -41,7 +41,7 @@ class JsonRpcVdsmClientInterface(VdsmRpcBase):
         try:
             self._vdsm_api = client.connect(host="localhost", use_tls=use_tls)
         except client.ConnectionError as e:
-            raise ConnectionError(str(e))
+            raise ConnectionError(str(e)) from e
 
         self.checked_call(self._vdsm_api.Host.ping2)
 

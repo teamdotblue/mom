@@ -83,7 +83,7 @@ def get_collectors(config_str, properties, global_config):
             continue
 
         # Check for Collector-specific configuration in the global config
-        section = "Collector: %s" % name
+        section = f"Collector: {name}"
         if global_config.has_section(section):
             properties['config'] = dict(global_config.items(section, raw=True))
 
@@ -129,7 +129,7 @@ def open_datafile(filename):
         filevar = open(filename, 'r')
     except IOError as e:
         logger = logging.getLogger('mom.Collector')
-        logger.error("Cannot open %s: %s" % (filename, e.strerror))
+        logger.error("Cannot open %s: %s", filename, e.strerror)
         sys.exit(1)
     return filevar
 
@@ -141,8 +141,7 @@ def parse_int(regex, src):
     m = re.search(regex, src, re.M)
     if m:
         return int(m.group(1))
-    else:
-        return None
+    return None
 
 def count_occurrences(regex, src):
     """
@@ -152,5 +151,4 @@ def count_occurrences(regex, src):
     m = re.findall(regex, src, re.M)
     if m:
         return len(m)
-    else:
-        return None
+    return None

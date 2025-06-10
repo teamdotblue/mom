@@ -17,15 +17,15 @@
 import logging
 
 def log_set_verbosity(logger, verbosity):
-    if verbosity == '5' or verbosity == 'debug':
+    if verbosity in ('5', 'debug'):
         level = logging.DEBUG
-    elif verbosity == '4' or verbosity == 'info':
+    elif verbosity in ('4', 'info'):
         level = logging.INFO
-    elif verbosity == '3' or verbosity == 'warn':
+    elif verbosity in ('3', 'warn'):
         level = logging.WARN
-    elif verbosity == '2' or verbosity == 'error':
+    elif verbosity in ('2', 'error'):
         level = logging.ERROR
-    elif verbosity == '1' or verbosity == 'critical':
+    elif verbosity in ('1', 'critical'):
         level = logging.CRITICAL
     else:
         level = logging.DEBUG

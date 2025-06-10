@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-
-from .vdsmCommon import memoize
-
+from mom.optional import Optional
 from mom.HypervisorInterfaces.vdsmxmlrpcInterface import XmlRpcVdsmInterface, \
     CACHE_EXPIRATION_IOTUNE
 
-from mom.optional import Optional
+from .vdsmCommon import memoize
 
 class XmlRpcVdsmBulkInterface(XmlRpcVdsmInterface):
     """

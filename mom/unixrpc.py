@@ -43,5 +43,3 @@ class UnixXmlRpcHttpConnection(http_client.HTTPConnection):
     def connect(self):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.connect(base64.b16decode(self.host).decode('utf-8'))
-
-

@@ -49,12 +49,11 @@ class GuestMemory(Collector):
         try:
             stat = self.hypervisor_iface.getVmMemoryStats(self.uuid)
         except HypervisorInterfaceError as e:
-            self.stats_error('getVmMemoryStats(): %s' % e)
+            self.stats_error(f"getVmMemoryStats(): {e}")
             # We don't raise a CollectionError here because a different
             # Collector (such as GuestQemuAgent) may be able to get them.
             # If not, the Monitor's collect method will detect the missing
             # fields anyway.
             return {}
-        else:
-            self.memstats_available = True
-            return stat
+        self.memstats_available = True
+        return stat

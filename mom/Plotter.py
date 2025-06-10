@@ -49,6 +49,6 @@ class Plotter:
         try:
             data_str = time_val + '\t' + '\t'.join(map(f, self.keys)) + '\n'
         except KeyError:
-            data_str = "# %s Incomplete data set\n" % time_val
+            data_str = f"# {time_val} Incomplete data set\n"
         self.file.write(data_str)
         self.file.flush()
